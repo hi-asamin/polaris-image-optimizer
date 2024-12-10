@@ -4,17 +4,11 @@
 
 ### Build
 
-プロジェクトの ルートディレクトリに移動し、ビルドコマンドを実行する
+プロジェクトの ルートディレクトリに移動し、zip 圧縮コマンドを実行する
 
 ```sh
 $ cd polaris-image-optimizer
 $ zip -r function.zip .
-```
-
-Lambda へ手動デプロイするために zip 化する
-
-```sh
-$ zip -r function.zip
 ```
 
 ### Deploy

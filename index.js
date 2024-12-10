@@ -42,28 +42,31 @@ exports.handler = async (event) => {
 
     console.log(`Optimized image uploaded: ${newKey}`);
 
-    // リサイズした画像を複数生成
-    const sizes = [300, 600, 1200]; // 生成する画像の幅（px）
-    for (const size of sizes) {
-      // SharpでWebP変換と圧縮
-      const resizedImage = await sharp(originalImage.Body)
-        .resize({ width: size })
-        .webp({ quality: 80 })
-        .toBuffer();
+    // // リサイズした画像を複数生成
+    // const sizes = [300, 600, 1200]; // 生成する画像の幅（px）
+    // for (const size of sizes) {
+    //   // SharpでWebP変換と圧縮
+    //   const resizedImage = await sharp(originalImage.Body)
+    //     .resize({ width: size })
+    //     .webp({ quality: 80 })
+    //     .toBuffer();
 
-      // WebP画像をアップロード
-      const resizedKey = key.replace(/\.(jpg|jpeg|png)$/i, `_${size}px.webp`);
-      await s3
-        .putObject({
-          Bucket: bucket,
-          Key: `resized/${resizedKey}`,
-          Body: resizedImage,
-          ContentType: "image/webp",
-          CacheControl: "max-age=31536000, public", // 1年間キャッシュ
-        })
-        .promise();
-      console.log(`Resized image uploaded: resized/${resizedKey}`);
-    }
+    //   // WebP画像をアップロード
+    //   const resizedKey = key.replace(
+    //     /^(.*\/)([^\/]+)\.(jpg|jpeg|png)$/i,
+    //     (_, path = "", filename) => `${path}resized/${filename}_${size}px.webp`
+    //   );
+    //   await s3
+    //     .putObject({
+    //       Bucket: bucket,
+    //       Key: `resized/${resizedKey}`,
+    //       Body: resizedImage,
+    //       ContentType: "image/webp",
+    //       CacheControl: "max-age=31536000, public", // 1年間キャッシュ
+    //     })
+    //     .promise();
+    //   console.log(`Resized image uploaded: resized/${resizedKey}`);
+    // }
 
     return {
       statusCode: 200,
