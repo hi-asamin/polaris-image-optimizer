@@ -27,6 +27,7 @@ exports.handler = async (event) => {
     // Exifの向きを修正しつつ、WebP変換と圧縮
     const optimizedImage = await sharp(originalImage.Body)
       .rotate() // Exif情報に基づいて自動で向きを修正
+      .resize(1080, 1080, { fit: "inside" }) // 1080px以下にリサイズ
       .webp({ quality: 80 }) // WebP形式で品質80
       .toBuffer();
 
