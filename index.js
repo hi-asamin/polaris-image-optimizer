@@ -24,51 +24,29 @@ exports.handler = async (event) => {
       })
       .promise();
 
-    // Exifの向きを修正しつつ、WebP変換と圧縮
-    const optimizedImage = await sharp(originalImage.Body)
-      .rotate() // Exif情報に基づいて自動で向きを修正
-      .resize(1080, 1080, { fit: "inside" }) // 1080px以下にリサイズ
-      .webp({ quality: 80 }) // WebP形式で品質80
-      .toBuffer();
+    // リサイズした画像を複数生成
+    const sizes = [300, 600, 1200]; // 生成する画像の幅（px）
+    for (const size of sizes) {
+      // SharpでWebP変換と圧縮
+      const resizedImage = await sharp(originalImage.Body)
+        .rotate() // Exif情報に基づいて自動で向きを修正
+        .resize({ width: size, fit: "inside" })
+        .webp({ quality: 80 })
+        .toBuffer();
 
-    // （オリジナル画像）WebP画像をアップロード
-    const newKey = key.replace(/\.(jpg|jpeg|png)$/i, ".webp");
-    await s3
-      .putObject({
-        Bucket: bucket,
-        Key: newKey,
-        Body: optimizedImage,
-        ContentType: "image/webp",
-      })
-      .promise();
-
-    console.log(`Optimized image uploaded: ${newKey}`);
-
-    // // リサイズした画像を複数生成
-    // const sizes = [300, 600, 1200]; // 生成する画像の幅（px）
-    // for (const size of sizes) {
-    //   // SharpでWebP変換と圧縮
-    //   const resizedImage = await sharp(originalImage.Body)
-    //     .resize({ width: size })
-    //     .webp({ quality: 80 })
-    //     .toBuffer();
-
-    //   // WebP画像をアップロード
-    //   const resizedKey = key.replace(
-    //     /^(.*\/)([^\/]+)\.(jpg|jpeg|png)$/i,
-    //     (_, path = "", filename) => `${path}resized/${filename}_${size}px.webp`
-    //   );
-    //   await s3
-    //     .putObject({
-    //       Bucket: bucket,
-    //       Key: `resized/${resizedKey}`,
-    //       Body: resizedImage,
-    //       ContentType: "image/webp",
-    //       CacheControl: "max-age=31536000, public", // 1年間キャッシュ
-    //     })
-    //     .promise();
-    //   console.log(`Resized image uploaded: resized/${resizedKey}`);
-    // }
+      // WebP画像をアップロード
+      const resizedKey = key.replace(/\.(jpg|jpeg|png)$/i, `_${size}px.webp`);
+      await s3
+        .putObject({
+          Bucket: bucket,
+          Key: resizedKey,
+          Body: resizedImage,
+          ContentType: "image/webp",
+          CacheControl: "max-age=31536000, public", // 1年間キャッシュ
+        })
+        .promise();
+      console.log(`Resized image uploaded: resized/${resizedKey}`);
+    }
 
     return {
       statusCode: 200,
